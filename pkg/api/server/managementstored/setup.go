@@ -169,6 +169,7 @@ func Setup(ctx context.Context, apiContext *config.ScaledContext, clusterManager
 	Preference(schemas, apiContext)
 	ClusterRegistrationTokens(schemas)
 	Tokens(ctx, schemas, apiContext)
+	NodePools(schemas, apiContext)
 	NodeTemplates(schemas, apiContext)
 	LoggingTypes(schemas, apiContext, clusterManager, k8sProxy)
 	Alert(schemas, apiContext)
@@ -833,4 +834,9 @@ func SystemImages(schemas *types.Schemas, management *config.ScaledContext) {
 func EtcdBackups(schemas *types.Schemas, management *config.ScaledContext) {
 	schema := schemas.Schema(&managementschema.Version, client.EtcdBackupType)
 	schema.Formatter = etcdbackup.Formatter
+}
+
+func NodePools(schemas *types.Schemas, managementContext *config.ScaledContext){
+	schema := schemas.Schema(&managementschema.Version, client.NodePoolType)
+	schema.Validator = nodepool.Validator
 }
