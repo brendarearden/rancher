@@ -268,3 +268,14 @@ def test_user_access_to_others_node_template(admin_mc, user_factory, remove_reso
             clusterId="local")
         remove_resource(node_pool)
     assert e.value.error.status == 404
+
+def test_admin_user_access_to_node_template(admin_mc,remove_resource):
+    admin_client = admin_mc.client
+    admin_node_template, _ = create_node_template(admin_client)
+    wait_for_node_template(admin_client, admin_node_template.id)
+    node_pool=admin_client.create_node_pool(
+        nodeTemplateId=admin_node_template.id,
+        hostnamePrefix="test1",
+        clusterId="local")
+    remove_resource(node_pool)
+    assert node_pool
