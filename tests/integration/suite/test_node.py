@@ -296,3 +296,15 @@ def test_user_access_to_node_template(admin_mc, user_mc, remove_resource):
         clusterId="local")
     remove_resource(node_pool)
     assert node_pool
+
+def test_admin_access_to_user_node_template(admin_mc, user_mc, remove_resource):
+    admin_client = admin_mc.client
+    user_client = user_mc.client
+    user_node_template, _ = create_node_template(user_client)
+    wait_for_node_template(user_client, user_node_template.id)
+    node_pool=admin_client.create_node_pool(
+        nodeTemplateId=user_node_template.id,
+        hostnamePrefix="test1",
+        clusterId="local")
+    remove_resource(node_pool)
+    assert node_pool
