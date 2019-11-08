@@ -836,7 +836,7 @@ func EtcdBackups(schemas *types.Schemas, management *config.ScaledContext) {
 	schema.Formatter = etcdbackup.Formatter
 }
 
-func NodePools(schemas *types.Schemas, managementContext *config.ScaledContext){
+func NodePools(schemas *types.Schemas, managementContext *config.ScaledContext) {
 	schema := schemas.Schema(&managementschema.Version, client.NodePoolType)
 	schema.Validator = nodepool.Validator
 }

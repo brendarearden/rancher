@@ -1,6 +1,5 @@
 package nodepool
 
-
 import (
 	"fmt"
 
@@ -13,9 +12,9 @@ import (
 
 func Validator(request *types.APIContext, schema *types.Schema, data map[string]interface{}) error {
 
-	nodetemplateId := data["nodeTemplateId"].(string)
-	if err := access.ByID(request, &mgmtSchema.Version, mgmtclient.NodeTemplateType, nodetemplateId, nil); err != nil {
-		return httperror.NewAPIError(httperror.NotFound, fmt.Sprintf("unable to find node template [%s]", nodetemplateId))
+	nodetemplateID := data["nodeTemplateId"].(string)
+	if err := access.ByID(request, &mgmtSchema.Version, mgmtclient.NodeTemplateType, nodetemplateID, nil); err != nil {
+		return httperror.NewAPIError(httperror.NotFound, fmt.Sprintf("unable to find node template [%s]", nodetemplateID))
 	}
 	return nil
 }
