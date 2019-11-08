@@ -245,3 +245,26 @@ def wait_for_node_template(client, node_template_id, timeout=60):
         for each_template in nodeTemplates:
             if each_template["id"] == node_template_id:
                 template = each_template
+
+
+def test_user_access_to_others_node_template(admin_mc, user_factory, remove_resource):
+    admin_client = admin_mc.client
+    user1 = user_factory()
+    remove_resource(user1)
+    user2 = user_factory()
+    remove_resource(user2)
+    user2_client = user2.client
+    member = admin_client.create_cluster_role_template_binding(
+        clusterId="local",
+        roleTemplateId="cluster-member",
+        userId=user1.user.id)
+    remove_resource(member)
+    user2_node_template, _ = create_node_template(user2_client)
+    wait_for_node_template(user2_client, user2_node_template.id)
+    with pytest.raises(ApiError) as e:
+        node_pool=user1.client.create_node_pool(
+            nodeTemplateId=user2_node_template.id,
+            hostnamePrefix="test1",
+            clusterId="local")
+        remove_resource(node_pool)
+    assert e.value.error.status == 404
