@@ -290,12 +290,14 @@ def test_user_access_to_node_template(admin_mc, user_mc, remove_resource):
     user_client = user_mc.client
     user_node_template, _ = create_node_template(user_client)
     wait_for_node_template(user_client, user_node_template.id)
-    node_pool=user_client.create_node_pool(
-        nodeTemplateId=user_node_template.id,
-        hostnamePrefix="test1",
-        clusterId="local")
-    remove_resource(node_pool)
-    assert node_pool
+    with pytest.raises(ApiError) as e:
+        node_pool=user_mc.client.create_node_pool(
+            nodeTemplateId=user_node_template.id,
+            hostnamePrefix="test1",
+            clusterId="local")
+        remove_resource(node_pool)
+    assert e.value.error.status != 404
+    assert 'cannot create resource "nodepools"' in e.value.error.message
 
 def test_admin_access_to_user_node_template(admin_mc, user_mc, remove_resource):
     admin_client = admin_mc.client
