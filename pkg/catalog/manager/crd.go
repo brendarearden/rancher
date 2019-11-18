@@ -40,7 +40,10 @@ func (m *Manager) createTemplate(template v3.CatalogTemplate, catalog *v3.Catalo
 }
 
 func (m *Manager) getTemplateMap(catalogName string, namespace string) (map[string]*v3.CatalogTemplate, error) {
-	r, _ := labels.NewRequirement(CatalogNameLabel, selection.Equals, []string{catalogName})
+	r, err := labels.NewRequirement(CatalogNameLabel, selection.Equals, []string{catalogName})
+	if err != nil {
+		return nil, err
+	}
 	templateList, err := m.templateLister.List(namespace, labels.NewSelector().Add(*r))
 	if err != nil {
 		return nil, err
@@ -53,7 +56,10 @@ func (m *Manager) getTemplateMap(catalogName string, namespace string) (map[stri
 }
 
 func (m *Manager) updateTemplate(template *v3.CatalogTemplate, toUpdate v3.CatalogTemplate) (bool, error) {
-	r, _ := labels.NewRequirement(TemplateNameLabel, selection.Equals, []string{template.Name})
+	r, err := labels.NewRequirement(TemplateNameLabel, selection.Equals, []string{template.Name})
+	if err != nil {
+		return false, err
+	}
 	updated := false
 	templateVersions, err := m.templateVersionLister.List(template.Namespace, labels.NewSelector().Add(*r))
 	if err != nil {
