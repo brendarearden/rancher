@@ -639,8 +639,8 @@ github.com/rancher/client-go v1.16.0-rancher.3 h1:bOA0zwtJi8wUeldqfrCGyDRuN6oW+z
 github.com/rancher/client-go v1.16.0-rancher.3/go.mod h1:J69/JveO6XESwVgG53q3Uz5OSfgsv4uxpScmmyYOOlk=
 github.com/rancher/kontainer-driver-metadata v0.0.0-20190930170218-cea47774d036/go.mod h1:n9MKsJByqAqhVG61d9G5pbJuKcHUMXUw97YF8+98ar0=
 github.com/rancher/kontainer-driver-metadata v0.0.0-20191210185103-dc45b432da60/go.mod h1:+FCrVV/rB6Bq6w988Qxw2kaaj+1FZq3ySsD23DFnQrw=
-github.com/rancher/kontainer-driver-metadata v0.0.0-20191212212042-9c56689469dc h1:EpGKHTankcTyA6ZRpxH2fWQWFpxOQXAfj20EuV5VeFs=
-github.com/rancher/kontainer-driver-metadata v0.0.0-20191212212042-9c56689469dc/go.mod h1:VBeI/67gB2g/zn1R3Tu7VvCCKTiYCX0HfsFVvnm7v2I=
+github.com/rancher/kontainer-driver-metadata v0.0.0-20191219221041-278e61bd811a h1:rUNhXhQHCGgMddgksIQtM8K0YFqFt+mvSEVxoVaQBR0=
+github.com/rancher/kontainer-driver-metadata v0.0.0-20191219221041-278e61bd811a/go.mod h1:VBeI/67gB2g/zn1R3Tu7VvCCKTiYCX0HfsFVvnm7v2I=
 github.com/rancher/kontainer-engine v0.0.4-dev.0.20191210052702-247063a5f1e8 h1:WkjABC6p2/xgeUxkOLP/frgUXEhzUsEwddB/gWcI21s=
 github.com/rancher/kontainer-engine v0.0.4-dev.0.20191210052702-247063a5f1e8/go.mod h1:Eccd5R2X1vvjYg0O1gZ0jWAl+bDq6Egv/H2YzKz5tP0=
 github.com/rancher/machine v0.15.0-rancher25 h1:i78iohBm9QLmxHOMM1ZssYwSNIObPdDUQjZ9h1mo8Jc=
@@ -946,7 +946,6 @@ golang.org/x/tools v0.0.0-20190621195816-6e04913cbbac/go.mod h1:/rFqwRUd4F7ZHNgw
 golang.org/x/tools v0.0.0-20190926165942-a8d5d34286bd/go.mod h1:b+2E5dAYhXwXZwtnZ6UAqBI28+e2cm9otk0dWdXHAEo=
 golang.org/x/tools v0.0.0-20191029041327-9cc4af7d6b2c h1:IGkKhmfzcztjm6gYkykvu/NiS8kaqbCWAEWWAyf8J5U=
 golang.org/x/tools v0.0.0-20191029041327-9cc4af7d6b2c/go.mod h1:b+2E5dAYhXwXZwtnZ6UAqBI28+e2cm9otk0dWdXHAEo=
-golang.org/x/tools v0.0.0-20191213032237-7093a17b0467 h1:Jybbe55FT+YYZIJGWmJIA4ZGcglFuZOduakIW3+gHXY=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 gonum.org/v1/gonum v0.0.0-20190331200053-3d26580ed485/go.mod h1:2ltnJ7xHfj0zHS40VVPYEAAMTa3ZGguvHGBSJeRWqE0=
 gonum.org/v1/netlib v0.0.0-20190313105609-8cb42192e0e0/go.mod h1:wa6Ws7BG/ESfp6dHfk7C6KdzKA7wR7u/rKwOGE66zvw=
