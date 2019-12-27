@@ -111,10 +111,10 @@ github.com/blang/semver v3.5.1+incompatible/go.mod h1:kRBLl5iJ+tD4TcOOxsy/0fnweb
 github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869/go.mod h1:Ekp36dRnpXw/yCqJaO+ZrUyxD+3VXMFFr56k5XYrpB4=
 github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
 github.com/brancz/gojsontoyaml v0.0.0-20190425155809-e8bd32d46b3d/go.mod h1:IyUJYN1gvWjtLF5ZuygmxbnsAyP3aJS6cHzIuZY50B0=
-github.com/brendarearden/kontainer-driver-metadata v0.0.0-20191227203946-0016a9fc7095 h1:iuIq1AlDxOx0lovQU47n+l9f728UAHAKUURK5Qxp804=
-github.com/brendarearden/kontainer-driver-metadata v0.0.0-20191227203946-0016a9fc7095/go.mod h1:VBeI/67gB2g/zn1R3Tu7VvCCKTiYCX0HfsFVvnm7v2I=
-github.com/brendarearden/rke v1.0.1-rc2.0.20191227205644-fd6f0018d0ec h1:jtjB+eKQ/sf2gQJAS3272T8TYib715jjJUc3BypASOk=
-github.com/brendarearden/rke v1.0.1-rc2.0.20191227205644-fd6f0018d0ec/go.mod h1:hGp/72G57pJw2K/rhDX6PxNiyZ8Auw9uAfqPt5mWnJo=
+github.com/brendarearden/kontainer-driver-metadata v0.0.0-20191227231347-2745baa5e9bc h1:tK7ToilRBTEf5i3JUrV9MKUrzzE/qOQ87PyqYQZknkY=
+github.com/brendarearden/kontainer-driver-metadata v0.0.0-20191227231347-2745baa5e9bc/go.mod h1:VBeI/67gB2g/zn1R3Tu7VvCCKTiYCX0HfsFVvnm7v2I=
+github.com/brendarearden/rke v1.0.1-rc2.0.20191227231539-9479f30ffb70 h1:Nnf/xJip8dF3iCqbRVyL2d0jWhqgTJK76KeyAGoNZD4=
+github.com/brendarearden/rke v1.0.1-rc2.0.20191227231539-9479f30ffb70/go.mod h1:1O8pa5/fnMBJtyAGfSOKLZbGMUBaatZEalEeC3lqOo4=
 github.com/bugsnag/bugsnag-go v0.0.0-20151120182711-02e952891c52/go.mod h1:2oa8nejYd4cQ/b0hMIopN0lCRxU0bueqREvZLWFrtK8=
 github.com/bugsnag/osext v0.0.0-20130617224835-0dd3f918b21b/go.mod h1:obH5gd0BsqsP2LwDJ9aOkm/6J86V6lyAXCoQWGw3K50=
 github.com/bugsnag/panicwrap v0.0.0-20160118154447-aceac81c6e2f/go.mod h1:D/8v3kj0zr8ZAKg1AQ6crr+5VwKN5eIywRkfhyM/+dE=

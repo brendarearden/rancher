@@ -9,8 +9,8 @@ replace (
 	github.com/knative/pkg => github.com/rancher/pkg v0.0.0-20190514055449-b30ab9de040e
 	github.com/matryer/moq => github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v0.9.3
-	github.com/rancher/kontainer-driver-metadata => github.com/brendarearden/kontainer-driver-metadata v0.0.0-20191227203946-0016a9fc7095
-	github.com/rancher/rke => github.com/brendarearden/rke v1.0.1-rc2.0.20191227205644-fd6f0018d0ec
+	github.com/rancher/kontainer-driver-metadata => github.com/brendarearden/kontainer-driver-metadata v0.0.0-20191227231347-2745baa5e9bc
+	github.com/rancher/rke => github.com/brendarearden/rke v1.0.1-rc2.0.20191227231539-9479f30ffb70
 	k8s.io/api => k8s.io/api v0.0.0-20190918155943-95b840bb6a1f
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20190918161926-8f644eb6e783
 	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20190913080033-27d36303b655
