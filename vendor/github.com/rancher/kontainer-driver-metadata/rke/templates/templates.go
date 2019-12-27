@@ -21,6 +21,7 @@ const (
 	calicov113 = "calico-v1.13"
 	calicov115 = "calico-v1.15"
 	calicov116 = "calico-v1.16"
+	calicov117 = "calico-v1.17"
 
 	canalv18  = "canal-v1.8"
 	canalv113 = "canal-v1.13"
@@ -50,7 +51,8 @@ const (
 func LoadK8sVersionedTemplates() map[string]map[string]string {
 	return map[string]map[string]string{
 		Calico: {
-			">=1.16.0-alpha":                     calicov116,
+			">=1.16.4": 						  calicov117,
+			">=1.16.0-alpha <1.16.4":             calicov116,
 			">=1.15.0-rancher0 <1.16.0-alpha":    calicov115,
 			">=1.13.0-rancher0 <1.15.0-rancher0": calicov113,
 			">=1.8.0-rancher0 <1.13.0-rancher0":  calicov18,
@@ -99,6 +101,7 @@ func getTemplates() map[string]string {
 		calicov113: CalicoTemplateV113,
 		calicov115: CalicoTemplateV115,
 		calicov116: CalicoTemplateV116,
+		calicov117: CalicoTemplateV117,
 		calicov18:  CalicoTemplateV112,
 
 		flannelv115: FlannelTemplateV115,
