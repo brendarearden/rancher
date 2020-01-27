@@ -84,7 +84,7 @@ func (m *Manager) traverseAndUpdate(helm *helmlib.Helm, commit string, cmt *Cata
 
 		template := v3.CatalogTemplate{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: chart,
+				Name: cutils.FormatChartName(chart),
 			},
 		}
 		template.Namespace = templateNamespace
@@ -148,7 +148,7 @@ func (m *Manager) traverseAndUpdate(helm *helmlib.Helm, commit string, cmt *Cata
 				}
 				if showUpgradeLinks(v.Version, versionSpec.Version) {
 					version := versionSpec.Version
-					v.UpgradeVersionLinks[versionSpec.Version] = fmt.Sprintf("%s-%s", template.Name, version)
+					v.UpgradeVersionLinks[versionSpec.Version] = fmt.Sprintf("%s-%s", template.Name, cutils.FormatSemVerVersion(version))
 				}
 			}
 
@@ -168,7 +168,7 @@ func (m *Manager) traverseAndUpdate(helm *helmlib.Helm, commit string, cmt *Cata
 		template.Labels = label
 		template.Spec.Categories = categories
 		template.Spec.Versions = versions
-		template.Name = fmt.Sprintf("%s-%s", catalog.Name, template.Spec.FolderName)
+		template.Name = fmt.Sprintf("%s-%s", catalog.Name, cutils.FormatChartName(template.Spec.FolderName))
 		switch catalogType {
 		case client.CatalogType:
 			template.Spec.CatalogID = catalog.Name

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -88,4 +89,24 @@ func ValidateURL(pathURL string) error {
 		return errors.New("Invalid characters in url")
 	}
 	return nil
+}
+
+
+func FormatChartName(chartName string) string {
+	chartName = truncateString(chartName, 63)
+	chartName = strings.TrimSuffix(chartName, "-")
+	return chartName
+}
+
+func FormatSemVerVersion(version string) string{
+	version = strings.Replace(version, "+", "_", -1)
+	return version
+}
+
+func truncateString(str string, num int) string {
+	newString := str
+	if len(str) > num {
+		newString = str[0:num]
+	}
+	return newString
 }
