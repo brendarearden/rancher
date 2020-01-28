@@ -86,7 +86,7 @@ func (m *Manager) updateTemplate(template *v3.CatalogTemplate, toUpdate v3.Catal
 			}
 		} else {
 			toCreate := &v3.CatalogTemplateVersion{}
-			toCreate.Name = fmt.Sprintf("%s-%v", template.Name, toUpdateVer.Version)
+			toCreate.Name = utils.FormatNameAndVersionLabel(fmt.Sprintf("%s-%v", template.Name, toUpdateVer.Version))
 			toCreate.Namespace = template.Namespace
 			toCreate.Labels = map[string]string{
 				TemplateNameLabel: template.Name,
@@ -171,7 +171,7 @@ func (m *Manager) createTemplateVersions(catalogName string, versionsSpec []v3.T
 	for _, spec := range versionsSpec {
 		templateVersion := &v3.CatalogTemplateVersion{}
 		templateVersion.Spec = spec
-		templateVersion.Name = fmt.Sprintf("%s-%v", template.Name, spec.Version)
+		templateVersion.Name = utils.FormatNameAndVersionLabel(fmt.Sprintf("%s-%v", template.Name, spec.Version))
 		templateVersion.Namespace = template.Namespace
 		templateVersion.Labels = map[string]string{
 			TemplateNameLabel: template.Name,

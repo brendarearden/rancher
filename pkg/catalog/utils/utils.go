@@ -1,12 +1,11 @@
 package utils
 
 import (
-	"regexp"
-	"strings"
-
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
+	"regexp"
+	"strings"
 )
 
 const (
@@ -91,16 +90,25 @@ func ValidateURL(pathURL string) error {
 	return nil
 }
 
-
-func FormatChartName(chartName string) string {
+//Following standards set by Helm for Chart Name / Release Name
+func FormatChartTemplateLabel(chartName string) string {
 	chartName = truncateString(chartName, 63)
 	chartName = strings.TrimSuffix(chartName, "-")
 	return chartName
 }
 
+//Following standards set by Helm for conventional alteration to allow SemVer versions
 func FormatSemVerVersion(version string) string{
 	version = strings.Replace(version, "+", "_", -1)
 	return version
+}
+
+// Following standards set by Helm for chart label where string is chart name and version
+func FormatNameAndVersionLabel(nameVersionLabel string) string {
+	nameVersionLabel = strings.Replace(nameVersionLabel, "+", "-", -1)
+	nameVersionLabel = truncateString(nameVersionLabel, 63)
+	nameVersionLabel = strings.TrimSuffix(nameVersionLabel, "-")
+	return nameVersionLabel
 }
 
 func truncateString(str string, num int) string {
