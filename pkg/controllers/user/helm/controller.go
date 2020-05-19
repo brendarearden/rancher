@@ -110,6 +110,7 @@ Updated depends on several conditions:
 	AppConditionUserTriggeredAction: Indicates when `upgrade` or `rollback` is called by the user
 */
 func (l *Lifecycle) Updated(obj *v3.App) (runtime.Object, error) {
+	logrus.Debugf("Starting update")
 	if obj.Spec.ExternalID == "" && len(obj.Spec.Files) == 0 {
 		return obj, nil
 	}
@@ -130,7 +131,9 @@ func (l *Lifecycle) Updated(obj *v3.App) (runtime.Object, error) {
 
 	obj = newObj.(*v3.App)
 	appRevisionClient := l.AppRevisionGetter.AppRevisions(projectName)
+	logrus.Debugf("app revision name: %s", obj.Spec.AppRevisionName)
 	if obj.Spec.AppRevisionName != "" {
+		logrus.Debugf("App revision name exists")
 		currentRevision, err := appRevisionClient.Get(obj.Spec.AppRevisionName, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
@@ -317,12 +320,16 @@ func (l *Lifecycle) Remove(obj *v3.App) (runtime.Object, error) {
 }
 
 func (l *Lifecycle) Run(obj *v3.App, template, notes string, tempDirs *hCommon.HelmPath) error {
+	logrus.Debugf("Run")
 	err := l.writeKubeConfig(obj, tempDirs.KubeConfigFull, false)
 	if err != nil {
 		return err
 	}
 	if err := helmInstall(tempDirs, obj); err != nil {
 		// create an app revision so that user can decide to continue
+		if strings.Contains(err.Error(), fmt.Sprintf("Error: a release named %s already exists.", obj.Name)) && obj.Spec.AppRevisionName == "" {
+			return err
+		}
 		err2 := l.createAppRevision(obj, template, notes, true)
 		if err2 != nil {
 			return errorsutil.Wrapf(err, "error encountered while creating appRevision %v",
@@ -334,6 +341,7 @@ func (l *Lifecycle) Run(obj *v3.App, template, notes string, tempDirs *hCommon.H
 }
 
 func (l *Lifecycle) createAppRevision(obj *v3.App, template, notes string, failed bool) error {
+	logrus.Debugf("Creating app revision")
 	_, projectName := ref.Parse(obj.Spec.ProjectName)
 	appRevisionClient := l.AppRevisionGetter.AppRevisions(projectName)
 	release := &v3.AppRevision{}
@@ -364,6 +372,7 @@ func (l *Lifecycle) createAppRevision(obj *v3.App, template, notes string, faile
 	if obj.Spec.Files != nil {
 		obj.Status.AppliedFiles = obj.Spec.Files
 	}
+	logrus.Debugf("End of app revision")
 	return err
 }
 

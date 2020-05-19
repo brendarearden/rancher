@@ -143,16 +143,30 @@ func InstallCharts(tempDirs *HelmPath, port string, obj *v3.App) error {
 		return err
 	}
 	commands := make([]string, 0)
-	if IsHelm3(obj.Status.HelmVersion) {
-		err = createKustomizeFiles(tempDirs, obj.Name)
-		if err != nil {
-			return err
+	if obj.Spec.AppRevisionName == "" {
+		if IsHelm3(obj.Status.HelmVersion) {
+			err = createKustomizeFiles(tempDirs, obj.Name)
+			if err != nil {
+				return err
+			}
+			logrus.Infof("Installing chart using helm version: %s", HelmV3)
+			commands = append([]string{"install", obj.Name, "--namespace", obj.Spec.TargetNamespace, "--kubeconfig", tempDirs.KubeConfigInJail, "--post-renderer", tempDirs.KustomizeInJail, "--history-max", maxHistory}, timeoutArgs...)
+		} else {
+			logrus.Infof("Installing chart using helm version: %s", HelmV2)
+			commands = append([]string{"install", "--name", obj.Name, "--namespace", obj.Spec.TargetNamespace}, timeoutArgs...)
 		}
-		logrus.Infof("Installing chart using helm version: %s", HelmV3)
-		commands = append([]string{"upgrade", "--install", obj.Name, "--namespace", obj.Spec.TargetNamespace, "--kubeconfig", tempDirs.KubeConfigInJail, "--post-renderer", tempDirs.KustomizeInJail, "--history-max", maxHistory}, timeoutArgs...)
 	} else {
-		logrus.Infof("Installing chart using helm version: %s", HelmV2)
-		commands = append([]string{"upgrade", "--install", "--namespace", obj.Spec.TargetNamespace, obj.Name}, timeoutArgs...)
+		if IsHelm3(obj.Status.HelmVersion) {
+			err = createKustomizeFiles(tempDirs, obj.Name)
+			if err != nil {
+				return err
+			}
+			logrus.Infof("Installing chart using helm version: %s", HelmV3)
+			commands = append([]string{"upgrade", obj.Name, "--namespace", obj.Spec.TargetNamespace, "--kubeconfig", tempDirs.KubeConfigInJail, "--post-renderer", tempDirs.KustomizeInJail, "--history-max", maxHistory}, timeoutArgs...)
+		} else {
+			logrus.Infof("Installing chart using helm version: %s", HelmV2)
+			commands = append([]string{"upgrade", obj.Name, "--namespace", obj.Spec.TargetNamespace}, timeoutArgs...)
+		}
 	}
 	commands = append(commands, setValues...)
 	commands = append(commands, tempDirs.AppDirInJail)
