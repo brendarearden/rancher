@@ -647,6 +647,57 @@ def test_app_has_helmversion(admin_pc, admin_mc, remove_resource):
     assert app2.helmVersion == "helm_v3"
 
 
+def test_app_upgrade_has_helmversion(admin_pc, admin_mc, remove_resource):
+    """Test that app is using specified helm version when upgrading to a
+    new version that was added to the existing catalog"""
+    app_client = admin_pc.client
+    catalog_client = admin_mc.client
+    catalog_name = random_str()
+    app_name = random_str()
+    cat_base = "catalog://?catalog=" + catalog_name +\
+        "&template=rancher-v3-issue&version="
+    catalog = catalog_client.create_catalog(
+      name=catalog_name,
+      branch="helmversion-onupdate-1v",
+      url="https://github.com/brendarearden/integration-test-charts",
+      helmVersion="helm_v3"
+    )
+    remove_resource(catalog)
+    wait_for_template_to_be_created(catalog_client, catalog_name)
+
+    ns = admin_pc.cluster.client.create_namespace(name=random_str(),
+                                                  projectId=admin_pc.
+                                                  project.id)
+    remove_resource(ns)
+    app = app_client.create_app(
+        name=app_name,
+        externalId=cat_base+"0.1.0&namespace="+ns.name,
+        targetNamespace=ns.name,
+        projectId=admin_pc.project.id,
+    )
+    remove_resource(app)
+    wait_for_workload(admin_pc.client, ns.name, count=1)
+    app = app_client.reload(app)
+    assert "helmVersion" in app
+    assert app.helmVersion == "helm_v3"
+    catalog_data = {
+      'name': catalog_name,
+      'branch': "helmversion-onupdate-2v",
+      'url': "https://github.com/brendarearden/integration-test-charts",
+      'helmVersion': "helm_v3"
+    }
+    catalog = catalog_client.update(catalog, catalog_data)
+    upgrade_dict = {
+        'obj': app,
+        'action_name': 'upgrade',
+        'externalId': cat_base+"0.1.1",
+        'forceUpgrade': False,
+    }
+    app = app_client.action(**upgrade_dict)
+    assert "helmVersion" in app
+    assert app.helmVersion == "helm_v3"
+
+
 def test_app_externalid_target_project_verification(admin_mc,
                                                     admin_pc,
                                                     user_factory,
