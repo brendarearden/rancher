@@ -686,14 +686,15 @@ def test_app_upgrade_has_helmversion(admin_pc, admin_mc, remove_resource):
       'url': "https://github.com/brendarearden/integration-test-charts",
       'helmVersion': "helm_v3"
     }
-    catalog = catalog_client.update(catalog, catalog_data)
-    upgrade_dict = {
-        'obj': app,
-        'action_name': 'upgrade',
+    catalog_client.update(catalog, catalog_data)
+    project_client = user_project_client(admin_pc, admin_pc.project)
+    app_data = {
+        'name': app_name,
         'externalId': cat_base+"0.1.1",
-        'forceUpgrade': False,
+        'targetNamespace': ns.name,
+        'projectId': admin_pc.project.id,
     }
-    app = app_client.action(**upgrade_dict)
+    project_client.update(app, app_data)
     assert "helmVersion" in app
     assert app.helmVersion == "helm_v3"
 
