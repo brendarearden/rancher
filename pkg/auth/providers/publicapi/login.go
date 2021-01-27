@@ -3,6 +3,7 @@ package publicapi
 import (
 	"context"
 	"encoding/json"
+	"github.com/rancher/rancher/pkg/auth/providers/oidc"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -153,6 +154,9 @@ func (h *loginHandler) createLoginToken(request *types.APIContext) (v3.Token, st
 	case client.GoogleOAuthProviderType:
 		input = &v32.GoogleOauthLogin{}
 		providerName = googleoauth.Name
+	case client.OIDCProviderType:
+		input = &v32.OIDCLogin{}
+		providerName = oidc.Name
 	default:
 		return v3.Token{}, "", httperror.NewAPIError(httperror.ServerError, "unknown authentication provider")
 	}

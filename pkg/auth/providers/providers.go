@@ -3,6 +3,7 @@ package providers
 import (
 	"context"
 	"fmt"
+	"github.com/rancher/rancher/pkg/auth/providers/oidc"
 	"sync"
 
 	"github.com/rancher/rancher/pkg/auth/providers/activedirectory"
@@ -129,6 +130,11 @@ func Configure(ctx context.Context, mgmt *config.ScaledContext) {
 	providers[googleoauth.Name] = p
 	providersByType[client.GoogleOauthConfigType] = p
 	providersByType[publicclient.GoogleOAuthProviderType] = p
+
+	p = oidc.Configure(ctx, mgmt, userMGR, tokenMGR)
+	ProviderNames[oidc.Name] = true
+	ProvidersWithSecrets[oidc.Name] = true
+	providers[oidc.Name] = true
 }
 
 func AuthenticateUser(ctx context.Context, input interface{}, providerName string) (v3.Principal, []v3.Principal, string, error) {

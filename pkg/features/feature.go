@@ -53,6 +53,12 @@ var (
 		true,
 		false,
 		false)
+	OIDCAuth = newFeature(
+		"oidc-generic-auth",
+		"Enable generic oidc authentication",
+		false,
+		false,
+		false)
 )
 
 type Feature struct {
