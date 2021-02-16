@@ -179,7 +179,7 @@ type SamlLoginOutput struct {
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-type OidcProvider struct {
+type OIDCProvider struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 	AuthProvider      `json:",inline"`
@@ -187,7 +187,7 @@ type OidcProvider struct {
 	RedirectURL string `json:"redirectUrl"`
 }
 
-type OidcLogin struct {
+type OIDCLogin struct {
 	GenericLogin `json:",inline"`
 	Code         string `json:"code" norman:"type=string,required"`
 }

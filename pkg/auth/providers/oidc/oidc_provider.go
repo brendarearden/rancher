@@ -59,14 +59,14 @@ func (o *oidcProvider) GetName() string {
 }
 
 func (o *oidcProvider) AuthenticateUser(ctx context.Context, input interface{}) (v3.Principal, []v3.Principal, string, error) {
-	login, ok := input.(*v32.GenericOIDCLogin)
+	login, ok := input.(*v32.OIDCLogin)
 	if !ok {
 		return v3.Principal{}, nil, "", fmt.Errorf("unexpected input type")
 	}
 	return o.LoginUser(ctx, login, nil, false)
 }
 
-func (o *oidcProvider) LoginUser(ctx context.Context, oauthLoginInfo *v32.GenericOIDCLogin, config *v32.OIDCConfig, testAndEnableAction bool) (v3.Principal, []v3.Principal, string, error) {
+func (o *oidcProvider) LoginUser(ctx context.Context, oauthLoginInfo *v32.OIDCLogin, config *v32.OIDCConfig, testAndEnableAction bool) (v3.Principal, []v3.Principal, string, error) {
 	var userPrincipal v3.Principal
 
 	if config == nil {
@@ -130,27 +130,27 @@ func (o *oidcProvider) toPrincipal (userInfo *UserInfo) v3.Principal {
 }
 
 func (o *oidcProvider) saveOIDCConfig(config *v32.OIDCConfig) error {
-	storedOIDCConfig, err := o.getOIDCConfig()
-	if err != nil {
-		return err
-	}
-	config.APIVersion = "management.cattle.io/v3"
-	config.Kind = v3.AuthConfigGroupVersionKind.Kind
-	config.Type = client.OIDC
-	config.ObjectMeta = storedOIDCConfig.ObjectMeta
-
-	field := strings.ToLower(client.AzureADConfigFieldApplicationSecret)
-	if err := common.CreateOrUpdateSecrets(o.secrets, config.ApplicationSecret, field, strings.ToLower(config.Type)); err != nil {
-		return err
-	}
-
-	config.ApplicationSecret = common.GetName(config.Type, field)
-
-	logrus.Debugf("updating OIDCConfig")
-	_, err = o.authConfigs.ObjectClient().Update(config.ObjectMeta.Name, config)
-	if err != nil {
-		return err
-	}
+	//storedOIDCConfig, err := o.getOIDCConfig()
+	//if err != nil {
+	//	return err
+	//}
+	//config.APIVersion = "management.cattle.io/v3"
+	//config.Kind = v3.AuthConfigGroupVersionKind.Kind
+	////config.Type = client
+	//config.ObjectMeta = storedOIDCConfig.ObjectMeta
+	//
+	//field := strings.ToLower(client.AzureADConfigFieldApplicationSecret)
+	//if err := common.CreateOrUpdateSecrets(o.secrets, config.ApplicationSecret, field, strings.ToLower(config.Type)); err != nil {
+	//	return err
+	//}
+	//
+	//config.ApplicationSecret = common.GetName(config.Type, field)
+	//
+	//logrus.Debugf("updating OIDCConfig")
+	//_, err = o.authConfigs.ObjectClient().Update(config.ObjectMeta.Name, config)
+	//if err != nil {
+	//	return err
+	//}
 	return nil
 }
 
