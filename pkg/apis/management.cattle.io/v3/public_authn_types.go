@@ -83,11 +83,6 @@ type GoogleOauthLogin struct {
 	Code         string `json:"code" norman:"type=string,required"`
 }
 
-type GenericOIDCLogin struct {
-	GenericLogin `json:",inline"`
-	Code         string `json:"code" norman:"type=string,required"`
-}
-
 // +genclient
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -114,7 +109,7 @@ type AzureADProvider struct {
 
 // +genclient
 // +genclient:nonNamespaced
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtimse.Object
 
 type SamlProvider struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -178,4 +173,21 @@ type SamlLoginInput struct {
 
 type SamlLoginOutput struct {
 	IdpRedirectURL string `json:"idpRedirectUrl"`
+}
+
+// +genclient
+// +genclient:nonNamespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+type OidcProvider struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+	AuthProvider      `json:",inline"`
+
+	RedirectURL string `json:"redirectUrl"`
+}
+
+type OidcLogin struct {
+	GenericLogin `json:",inline"`
+	Code         string `json:"code" norman:"type=string,required"`
 }
