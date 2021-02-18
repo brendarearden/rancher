@@ -81,3 +81,13 @@ type SamlConfigList struct {
 
 	Items []SamlConfig `json:"items"`
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// OIDCConfigList is a list of OIDCConfig resources
+type OIDCConfigList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata"`
+
+	Items []OIDCConfig `json:"items"`
+}

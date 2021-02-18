@@ -407,3 +407,31 @@ type ShibbolethConfig struct {
 type AuthSystemImages struct {
 	KubeAPIAuth string `json:"kubeAPIAuth,omitempty"`
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+type OIDCConfig struct {
+	AuthConfig `json:",inline" mapstructure:",squash"`
+
+	ClientID         string `json:"clientId" norman:"required"`
+	ClientSecret     string `json:"clientSecret,omitempty" norman:"required,type=password"`
+	Scopes           string `json:"scope", norman:"required,default=openid|profile|email,notnullable,required"`
+	ResponseType     string `json:"responseType", norman:"required"`
+	GrantType        string `json:"grantType", norman:"type=enum,default=authorization_code,notnullable,required"`
+	TokenEndpoint    string `json:"tokenEndpoint,omitempty" norman:"required,notnullable"`
+	AuthEndpoint     string `json:"authEndpoint,omitempty" norman:"required,notnullable"`
+	UserInfoEndpoint string `json:"userInfoEndpoint,omitempty" norman:"required,notnullable"`
+	Certificate      string `json:"certificate,omitempty"`
+	PrivateKey       string `json:"spKey" norman:"type=password"`
+	RancherUrl       string `json:"rancherUrl,omitempty" norman:"required,notnullable"`
+}
+
+type OIDCTestOutput struct {
+	RedirectURL string `json:"redirectUrl"`
+}
+
+type OIDCApplyInput struct {
+	OidcConfig OIDCConfig `json:"oidcConfig,omitempty"`
+	Code       string     `json:"code,omitempty"`
+	Enabled    bool       `json:"enabled,omitempty"`
+}

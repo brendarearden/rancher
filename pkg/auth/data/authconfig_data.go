@@ -7,6 +7,7 @@ import (
 	"github.com/rancher/rancher/pkg/auth/providers/googleoauth"
 	"github.com/rancher/rancher/pkg/auth/providers/ldap"
 	localprovider "github.com/rancher/rancher/pkg/auth/providers/local"
+	"github.com/rancher/rancher/pkg/auth/providers/oidc"
 	"github.com/rancher/rancher/pkg/auth/providers/saml"
 	client "github.com/rancher/rancher/pkg/client/generated/management/v3"
 	v3 "github.com/rancher/rancher/pkg/generated/norman/management.cattle.io/v3"
@@ -57,6 +58,10 @@ func AuthConfigs(management *config.ManagementContext) error {
 	}
 
 	if err := addAuthConfig(googleoauth.Name, client.GoogleOauthConfigType, false, management); err != nil {
+		return err
+	}
+
+	if err := addAuthConfig(oidc.Name, client.OIDCConfigType, false, management); err != nil {
 		return err
 	}
 

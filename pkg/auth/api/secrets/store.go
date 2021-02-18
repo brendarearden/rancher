@@ -26,6 +26,7 @@ var (
 		client.OKTAConfigType:            {client.OKTAConfigFieldSpKey},
 		client.ShibbolethConfigType:      {client.ShibbolethConfigFieldSpKey},
 		client.GoogleOauthConfigType:     {client.GoogleOauthConfigFieldOauthCredential, client.GoogleOauthConfigFieldServiceAccountCredential},
+		client.OIDCConfigType:            {client.OIDCConfigFieldPrivateKey},
 	}
 
 	SubTypeToFields = map[string]map[string][]string{

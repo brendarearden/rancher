@@ -618,7 +618,25 @@ func authnTypes(schemas *types.Schemas) *types.Schemas {
 			schema.ResourceMethods = []string{http.MethodGet, http.MethodPut}
 		}).
 		MustImport(&Version, v3.GoogleOauthConfigApplyInput{}).
-		MustImport(&Version, v3.GoogleOauthConfigTestOutput{})
+		MustImport(&Version, v3.GoogleOauthConfigTestOutput{}).
+		//OIDC Config
+		MustImportAndCustomize(&Version, v3.OIDCConfig{}, func(schema *types.Schema) {
+			schema.BaseType = "authConfig"
+			schema.ResourceActions = map[string]types.Action{
+				"disable": {},
+				"configureTest": {
+					Input:  "oidcConfig",
+					Output: "oidcConfigTestOutput",
+				},
+				"testAndApply": {
+					Input: "oidcConfigApplyInput",
+				},
+			}
+			schema.CollectionMethods = []string{}
+			schema.ResourceMethods = []string{http.MethodGet, http.MethodPut}
+		}).
+		MustImport(&Version, v3.OIDCApplyInput{}).
+		MustImport(&Version, v3.OIDCTestOutput{})
 }
 
 func configSchema(schema *types.Schema) {
