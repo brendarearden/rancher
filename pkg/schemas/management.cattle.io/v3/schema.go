@@ -626,10 +626,10 @@ func authnTypes(schemas *types.Schemas) *types.Schemas {
 				"disable": {},
 				"configureTest": {
 					Input:  "oidcConfig",
-					Output: "oidcConfigTestOutput",
+					Output: "oidcTestOutput",
 				},
 				"testAndApply": {
-					Input: "oidcConfigApplyInput",
+					Input: "oidcApplyInput",
 				},
 			}
 			schema.CollectionMethods = []string{}

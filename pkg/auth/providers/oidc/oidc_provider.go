@@ -2,12 +2,16 @@ package oidc
 
 import (
 	"context"
+	"crypto/x509"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/rancher/norman/types/convert"
+
 	"github.com/mitchellh/mapstructure"
+	"github.com/pkg/errors"
 	"github.com/rancher/norman/httperror"
 	"github.com/rancher/norman/types"
 	v32 "github.com/rancher/rancher/pkg/apis/management.cattle.io/v3"
@@ -25,7 +29,9 @@ import (
 )
 
 const (
-	Name = "oidc"
+	Name      = "oidc"
+	UserType  = "user"
+	GroupType = "group"
 )
 
 type oidcProvider struct {
@@ -62,12 +68,13 @@ func (o *oidcProvider) AuthenticateUser(ctx context.Context, input interface{}) 
 	if !ok {
 		return v3.Principal{}, nil, "", fmt.Errorf("unexpected input type")
 	}
-	return o.LoginUser(login, nil, false)
+	return o.LoginUser(login, nil)
 }
 
-func (o *oidcProvider) LoginUser(oauthLoginInfo *v32.OIDCLogin, config *v32.OIDCConfig, testAndEnableAction bool) (v3.Principal, []v3.Principal, string, error) {
+func (o *oidcProvider) LoginUser(oauthLoginInfo *v32.OIDCLogin, config *v32.OIDCConfig) (v3.Principal, []v3.Principal, string, error) {
 	var userPrincipal v3.Principal
-	//var cert *x509.Certificate
+	var groupPrincipal []v3.Principal
+	var caPool *x509.CertPool
 	var err error
 
 	if config == nil {
@@ -78,43 +85,97 @@ func (o *oidcProvider) LoginUser(oauthLoginInfo *v32.OIDCLogin, config *v32.OIDC
 	}
 	logrus.Debugf("[generic oidc] loginuser: using code to get oauth token")
 	code := oauthLoginInfo.Code
-	//logrus.Debugf("[generic oidc] loginuser: exchanging code for oauth tokens")
-	//if config.Certificate != "" {
-	//	block, _ := pem.Decode([]byte(config.Certificate))
-	//	if block == nil {
-	//		return userPrincipal, nil, "", fmt.Errorf("[generic oidc] loginuser: failed to parse PEM block containing the private key")
-	//	}
-	//
-	//	cert, err = x509.ParseCertificate(block.Bytes)
-	//	if err != nil {
-	//		return userPrincipal, nil, "", fmt.Errorf("[generic oidc] loginuser: failed to parse DER encoded public key: " + err.Error())
-	//	}
-	//}
-	//keyPair := tls.Certificate{
-	//	Certificate: [][]byte{cert.Raw},
-	//	PrivateKey:  config.PrivateKey,
-	//	Leaf:        cert,
-	//}
-	oauthTokens, err := o.oidcClient.getAccessTokens(code, config)
-	userInfo, err := o.oidcClient.getUserInfo(oauthTokens.AccessToken, config)
-	userPrincipal = o.toPrincipal(userInfo)
-	logrus.Debugf("[generic oidc] loginuser: Checking user's access to Rancher")
-	allowed, err := o.userMGR.CheckAccess(config.AccessMode, config.AllowedPrincipalIDs, userPrincipal.Name, nil)
+
+	logrus.Debugf("[generic oidc] loginuser: get well-known configuration")
+	wk, err := o.oidcClient.getWellKnownConfig(config, caPool)
 	if err != nil {
-		return userPrincipal, nil, "", err
+		return userPrincipal, groupPrincipal, "", err
+	}
+	logrus.Debugf("[generic oidc] loginuser: validate provider is supported")
+	isSupportedProvider := isSupportedProvider(*wk, strings.Split(config.Scopes, ","))
+	if !isSupportedProvider {
+		return userPrincipal, groupPrincipal, "", errors.New("[generic oidc] Provider does not support required scopes and claims")
+	}
+	configUnsetEndpoints(*wk, config)
+	logrus.Debugf("[generic oidc] loginuser: exchanging code for oauth tokens")
+	oauthTokens, err := o.oidcClient.getAccessTokens(code, config, caPool)
+	if err != nil {
+		return userPrincipal, groupPrincipal, "", err
+	}
+	accessToken := oauthTokens.AccessToken
+	userInfo, err := o.oidcClient.getUserInfo(accessToken, config, caPool)
+	if err != nil {
+		return userPrincipal, groupPrincipal, "", err
+	}
+
+	userPrincipal = o.userToPrincipal(userInfo)
+	for _, group := range userInfo.Groups {
+		groupPrincipal = append(groupPrincipal, o.groupToPrincipal(group))
+	}
+	logrus.Debugf("[generic oidc] loginuser: Checking user's access to Rancher")
+	allowed, err := o.userMGR.CheckAccess(config.AccessMode, config.AllowedPrincipalIDs, userPrincipal.Name, groupPrincipal)
+	if err != nil {
+		return userPrincipal, groupPrincipal, "", err
 	}
 	if !allowed {
-		return userPrincipal, nil, "", httperror.NewAPIError(httperror.Unauthorized, "unauthorized")
+		return userPrincipal, groupPrincipal, "", httperror.NewAPIError(httperror.Unauthorized, "unauthorized")
 	}
-	return userPrincipal, nil, "", nil
+	return userPrincipal, groupPrincipal, accessToken, nil
 }
 
-func (o *oidcProvider) SearchPrincipals(name, principalType string, myToken v3.Token) ([]v3.Principal, error) {
-	return []v3.Principal{}, fmt.Errorf("[generic oidc] providers do not implement Search Principals")
+func (o *oidcProvider) SearchPrincipals(searchValue, principalType string, token v3.Token) ([]v3.Principal, error) {
+	var principals []v3.Principal
+	if principalType == "" {
+		principalType = UserType
+	}
+
+	p := v3.Principal{
+		ObjectMeta:    metav1.ObjectMeta{Name: "_" + principalType + "://" + searchValue},
+		DisplayName:   searchValue,
+		LoginName:     searchValue,
+		PrincipalType: principalType,
+		Provider:      Name,
+	}
+
+	principals = append(principals, p)
+	return principals, nil
 }
 
 func (o *oidcProvider) GetPrincipal(principalID string, token v3.Token) (v3.Principal, error) {
-	return v3.Principal{}, fmt.Errorf("[generic oidc] providers do not implement Get Principals")
+	var p v3.Principal
+
+	// parsing id to get the external id and type. Exaple oidc_<user|group>://<user sub | group name>
+	var externalID string
+	parts := strings.SplitN(principalID, ":", 2)
+	if len(parts) != 2 {
+		return p, errors.Errorf("invalid id %v", principalID)
+	}
+	externalID = strings.TrimPrefix(parts[1], "//")
+	parts = strings.SplitN(parts[0], "_", 2)
+	if len(parts) != 2 {
+		return p, errors.Errorf("invalid id %v", principalID)
+	}
+
+	principalType := parts[1]
+	if externalID == "" && principalType == "" {
+		return p, fmt.Errorf("[generic oidc]: invalid id %v", principalID)
+	}
+	if principalType != UserType && principalType != GroupType {
+		return p, fmt.Errorf("[generic oidc]: invalid principal type")
+	}
+	if principalID == UserType {
+		p = v3.Principal{
+			ObjectMeta:    metav1.ObjectMeta{Name: principalType + "://" + externalID},
+			DisplayName:   externalID,
+			LoginName:     externalID,
+			PrincipalType: UserType,
+			Provider:      Name,
+		}
+	} else {
+		p = o.groupToPrincipal(externalID)
+	}
+	p = o.toPrincipalFromToken(principalType, p, &token)
+	return p, nil
 }
 
 func (o *oidcProvider) CustomizeSchema(schema *types.Schema) {
@@ -130,7 +191,7 @@ func (o *oidcProvider) TransformToAuthProvider(authConfig map[string]interface{}
 
 func (o *oidcProvider) getRedirectURL(config map[string]interface{}) string {
 	return fmt.Sprintf(
-		"%s?client_id=%s&redirect_uri=%s",
+		"%s?client_id=%s&response_type=code&redirect_uri=%s",
 		config["authEndpoint"],
 		config["clientId"],
 		config["rancherUrl"],
@@ -138,7 +199,7 @@ func (o *oidcProvider) getRedirectURL(config map[string]interface{}) string {
 }
 
 func (o *oidcProvider) RefetchGroupPrincipals(principalID string, secret string) ([]v3.Principal, error) {
-	return []v3.Principal{}, fmt.Errorf("[generic oidc]: does not implement Get Principals")
+	return nil, errors.New("[generic oidc]: not implemented")
 }
 
 func (o *oidcProvider) CanAccessWithGroupProviders(userPrincipalID string, groupPrincipals []v3.Principal) (bool, error) {
@@ -154,15 +215,50 @@ func (o *oidcProvider) CanAccessWithGroupProviders(userPrincipalID string, group
 	return allowed, nil
 }
 
-func (o *oidcProvider) toPrincipal(userInfo *UserInfo) v3.Principal {
+func (o *oidcProvider) userToPrincipal(userInfo *UserInfo) v3.Principal {
+	displayName := userInfo.Name
+	if displayName == "" {
+		displayName = userInfo.Email
+	}
 	p := v3.Principal{
-		ObjectMeta:    metav1.ObjectMeta{Name: Name + "_user://" + userInfo.Subject},
-		DisplayName:   userInfo.Email,
+		ObjectMeta:    metav1.ObjectMeta{Name: Name + "_" + UserType + "://" + userInfo.Subject},
+		DisplayName:   displayName,
 		LoginName:     userInfo.Email,
-		PrincipalType: "user",
 		Provider:      Name,
+		PrincipalType: UserType,
+		Me:            false,
 	}
 	return p
+}
+
+func (o *oidcProvider) groupToPrincipal(groupName string) v3.Principal {
+	p := v3.Principal{
+		ObjectMeta:    metav1.ObjectMeta{Name: Name + "_group://" + groupName},
+		DisplayName:   groupName,
+		Provider:      Name,
+		PrincipalType: GroupType,
+		Me:            false,
+	}
+	return p
+}
+
+func (o *oidcProvider) toPrincipalFromToken(principalType string, princ v3.Principal, token *v3.Token) v3.Principal {
+	if principalType == UserType {
+		princ.PrincipalType = UserType
+		if token != nil {
+			princ.Me = o.isThisUserMe(token.UserPrincipal, princ)
+			if princ.Me {
+				princ.LoginName = token.UserPrincipal.LoginName
+				princ.DisplayName = token.UserPrincipal.DisplayName
+			}
+		}
+	} else {
+		princ.PrincipalType = GroupType
+		if token != nil {
+			princ.MemberOf = o.tokenMGR.IsMemberOf(*token, princ)
+		}
+	}
+	return princ
 }
 
 func (o *oidcProvider) saveOIDCConfig(config *v32.OIDCConfig) error {
@@ -181,6 +277,11 @@ func (o *oidcProvider) saveOIDCConfig(config *v32.OIDCConfig) error {
 			return err
 		}
 		config.PrivateKey = common.GetName(config.Type, field)
+	}
+
+	field := strings.ToLower(client.OIDCConfigFieldClientSecret)
+	if err := common.CreateOrUpdateSecrets(o.secrets, convert.ToString(config.ClientSecret), field, strings.ToLower(config.Type)); err != nil {
+		return err
 	}
 
 	logrus.Debugf("[generic oidc] updating config")
@@ -219,12 +320,57 @@ func (o *oidcProvider) getOIDCConfig() (*v32.OIDCConfig, error) {
 		}
 		storedOidcConfig.PrivateKey = value
 	}
+
+	if storedOidcConfig.ClientSecret != "" {
+		data, err := common.ReadFromSecretData(o.secrets, storedOidcConfig.ClientSecret)
+		if err != nil {
+			return nil, err
+		}
+		for _, v := range data {
+			storedOidcConfig.ClientSecret = string(v)
+		}
+	}
+
 	return storedOidcConfig, nil
 }
 
 func (o *oidcProvider) isThisUserMe(me v3.Principal, other v3.Principal) bool {
 	if me.ObjectMeta.Name == other.ObjectMeta.Name && me.LoginName == other.LoginName && me.PrincipalType == other.PrincipalType {
 		return true
+	}
+	return false
+}
+
+func configUnsetEndpoints(wkConfig WellKnownConfig, config *v32.OIDCConfig) *v32.OIDCConfig {
+	if config.AuthEndpoint == "" {
+		config.AuthEndpoint = wkConfig.AuthEndpoint
+	}
+	if config.UserInfoEndpoint == "" {
+		config.UserInfoEndpoint = wkConfig.UserInfoEndpoint
+	}
+	if config.TokenEndpoint == "" {
+		config.TokenEndpoint = wkConfig.TokenEndpoint
+	}
+	return config
+}
+
+func isSupportedProvider(wkConfig WellKnownConfig, reqScopes []string) bool {
+	found := true
+	validScopeClaim := append(wkConfig.ScopesSupported, wkConfig.ClaimsSupported...)
+	for _, scope := range reqScopes {
+		found = find(validScopeClaim, scope)
+		if !found {
+			return found
+		}
+	}
+	return found
+}
+
+func find(values []string, val string) bool {
+	for _, item := range values {
+		if item == val {
+			return true
+		}
 	}
 	return false
 }

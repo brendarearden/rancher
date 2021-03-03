@@ -416,14 +416,15 @@ type OIDCConfig struct {
 	ClientID         string `json:"clientId" norman:"required"`
 	ClientSecret     string `json:"clientSecret,omitempty" norman:"required,type=password"`
 	Scopes           string `json:"scope", norman:"required,default=openid|profile|email,notnullable,required"`
-	ResponseType     string `json:"responseType", norman:"required"`
-	GrantType        string `json:"grantType", norman:"type=enum,default=authorization_code,notnullable,required"`
-	TokenEndpoint    string `json:"tokenEndpoint,omitempty" norman:"required,notnullable"`
+	ResponseType     string `json:"responseType", norman:"default=id_token,notnullable,required"`
+	GrantType        string `json:"grantType", norman:"default=authorization_code,notnullable,required"`
+	TokenEndpoint    string `json:"tokenEndpoint,omitempty"`
 	AuthEndpoint     string `json:"authEndpoint,omitempty" norman:"required,notnullable"`
-	UserInfoEndpoint string `json:"userInfoEndpoint,omitempty" norman:"required,notnullable"`
+	UserInfoEndpoint string `json:"userInfoEndpoint,omitempty"`
+	Issuer           string `json:"issuer" norman:"required,notnullable"`
 	Certificate      string `json:"certificate,omitempty"`
-	PrivateKey       string `json:"spKey" norman:"type=password"`
-	RancherUrl       string `json:"rancherUrl,omitempty" norman:"required,notnullable"`
+	PrivateKey       string `json:"privateKey" norman:"type=password"`
+	RancherURL       string `json:"rancherUrl" norman:"required,notnullable"`
 }
 
 type OIDCTestOutput struct {

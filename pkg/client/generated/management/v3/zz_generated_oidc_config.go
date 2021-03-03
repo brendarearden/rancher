@@ -13,11 +13,12 @@ const (
 	OIDCConfigFieldCreatorID           = "creatorId"
 	OIDCConfigFieldEnabled             = "enabled"
 	OIDCConfigFieldGrantType           = "grantType"
+	OIDCConfigFieldIssuer              = "issuer"
 	OIDCConfigFieldLabels              = "labels"
 	OIDCConfigFieldName                = "name"
 	OIDCConfigFieldOwnerReferences     = "ownerReferences"
-	OIDCConfigFieldPrivateKey          = "spKey"
-	OIDCConfigFieldRancherUrl          = "rancherUrl"
+	OIDCConfigFieldPrivateKey          = "privateKey"
+	OIDCConfigFieldRancherURL          = "rancherUrl"
 	OIDCConfigFieldRemoved             = "removed"
 	OIDCConfigFieldResponseType        = "responseType"
 	OIDCConfigFieldScopes              = "scope"
@@ -39,11 +40,12 @@ type OIDCConfig struct {
 	CreatorID           string            `json:"creatorId,omitempty" yaml:"creatorId,omitempty"`
 	Enabled             bool              `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	GrantType           string            `json:"grantType,omitempty" yaml:"grantType,omitempty"`
+	Issuer              string            `json:"issuer,omitempty" yaml:"issuer,omitempty"`
 	Labels              map[string]string `json:"labels,omitempty" yaml:"labels,omitempty"`
 	Name                string            `json:"name,omitempty" yaml:"name,omitempty"`
 	OwnerReferences     []OwnerReference  `json:"ownerReferences,omitempty" yaml:"ownerReferences,omitempty"`
-	PrivateKey          string            `json:"spKey,omitempty" yaml:"spKey,omitempty"`
-	RancherUrl          string            `json:"rancherUrl,omitempty" yaml:"rancherUrl,omitempty"`
+	PrivateKey          string            `json:"privateKey,omitempty" yaml:"privateKey,omitempty"`
+	RancherURL          string            `json:"rancherUrl,omitempty" yaml:"rancherUrl,omitempty"`
 	Removed             string            `json:"removed,omitempty" yaml:"removed,omitempty"`
 	ResponseType        string            `json:"responseType,omitempty" yaml:"responseType,omitempty"`
 	Scopes              string            `json:"scope,omitempty" yaml:"scope,omitempty"`

@@ -42,12 +42,7 @@ func (o *oidcProvider) actionHandler(actionName string, action *types.Action, re
 }
 
 func (o *oidcProvider) configureTest(actionName string, action *types.Action, request *types.APIContext) error {
-	oidcConfig := &v32.OIDCConfig{}
-	if err := json.NewDecoder(request.Request.Body).Decode(oidcConfig); err != nil {
-		return httperror.NewAPIError(httperror.InvalidBodyContent,
-			fmt.Sprintf("[generic oidc] configureTest: Failed to parse body: %v", err))
-	}
-
+	//verify body has all required fields
 	input, err := handler.ParseAndValidateActionBody(request, request.Schemas.Schema(&managementschema.Version,
 		client.OIDCConfigType))
 	if err != nil {
@@ -63,8 +58,8 @@ func (o *oidcProvider) configureTest(actionName string, action *types.Action, re
 }
 func (o *oidcProvider) testAndApply(actionName string, action *types.Action, request *types.APIContext) error {
 	var oidcConfig v32.OIDCConfig
-
 	oidcConfigApplyInput := &v32.OIDCApplyInput{}
+
 	if err := json.NewDecoder(request.Request.Body).Decode(oidcConfigApplyInput); err != nil {
 		return httperror.NewAPIError(httperror.InvalidBodyContent,
 			fmt.Sprintf("[generic oidc] testAndApply: Failed to parse body: %v", err))
@@ -76,7 +71,7 @@ func (o *oidcProvider) testAndApply(actionName string, action *types.Action, req
 	}
 
 	//call provider
-	userPrincipal, groupPrincipals, providerToken, err := o.LoginUser(oidcLogin, &oidcConfig, true)
+	userPrincipal, groupPrincipals, providerToken, err := o.LoginUser(oidcLogin, &oidcConfig)
 	if err != nil {
 		if httperror.IsAPIError(err) {
 			return err
