@@ -209,7 +209,16 @@ func (c *Manager) filterReleases(index *repo.IndexFile, k8sVersion *semver.Versi
 	for rel, versions := range index.Entries {
 		newVersions := make([]*repo.ChartVersion, 0, len(versions))
 		for _, version := range versions {
-			if constraintStr, ok := version.Annotations["catalog.cattle.io/rancher-version"]; ok {
+			if constraintStr, ok := version.Annotations["catalog.cattle.io/rancher-min-version"]; ok {
+				if constraint, err := semver.NewConstraint(constraintStr); err == nil {
+					if !constraint.Check(rancherVersion) {
+						continue
+					}
+				} else {
+					logrus.Errorf("failed to parse constraint version %s: %v", constraintStr, err)
+				}
+			}
+			if constraintStr, ok := version.Annotations["catalog.cattle.io/rancher-max-version"]; ok {
 				if constraint, err := semver.NewConstraint(constraintStr); err == nil {
 					if !constraint.Check(rancherVersion) {
 						continue
