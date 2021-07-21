@@ -388,8 +388,13 @@ func (o *OpenIDCProvider) GetUserInfo(ctx *context.Context, config *v32.OIDCConf
 		return userInfo, oauth2Token, adminOauthToken, err
 	}
 	oauthConfig := ConfigToOauthConfig(provider.Endpoint(), config)
+	var verifier = provider.Verifier(&oidc.Config{ClientID: config.ClientID})
 	if err := json.Unmarshal([]byte(authCode), &oauth2Token); err != nil {
 		oauth2Token, err = oauthConfig.Exchange(updatedContext, authCode, oauth2.SetAuthURLParam("scope", strings.Join(oauthConfig.Scopes, " ")))
+		if err != nil {
+			return userInfo, oauth2Token, adminOauthToken, err
+		}
+		_, err = verifier.Verify(updatedContext, oauth2Token.AccessToken)
 		if err != nil {
 			return userInfo, oauth2Token, adminOauthToken, err
 		}
@@ -399,21 +404,12 @@ func (o *OpenIDCProvider) GetUserInfo(ctx *context.Context, config *v32.OIDCConf
 		if err != nil {
 			return userInfo, oauth2Token, adminOauthToken, err
 		}
-	}
-
-	rawToken, ok := oauth2Token.Extra("id_token").(string)
-	if !ok {
-		rawToken, ok = oauth2Token.Extra("access_token").(string)
-		if !ok {
+		_, err = verifier.Verify(updatedContext, adminOauthToken.AccessToken)
+		if err != nil {
 			return userInfo, oauth2Token, adminOauthToken, err
 		}
 	}
-	var verifier = provider.Verifier(&oidc.Config{ClientID: config.ClientID})
-	// parse and verify the id token payload
-	_, err = verifier.Verify(updatedContext, rawToken)
-	if err != nil {
-		return userInfo, oauth2Token, adminOauthToken, err
-	}
+
 	userInfo, err = provider.UserInfo(updatedContext, oauthConfig.TokenSource(updatedContext, oauth2Token))
 	if err != nil {
 		return userInfo, oauth2Token, adminOauthToken, err
@@ -425,19 +421,24 @@ func (o *OpenIDCProvider) GetUserInfo(ctx *context.Context, config *v32.OIDCConf
 }
 
 func ConfigToOauthConfig(endpoint oauth2.Endpoint, config *v32.OIDCConfig) oauth2.Config {
+	var finalScopes []string
 	hasOIDCScope := strings.Contains(config.Scopes, oidc.ScopeOpenID)
 	// scopes must be space separated in string when passed into the api
 	configScopes := strings.Split(config.Scopes, " ")
 	if !hasOIDCScope {
 		configScopes = append(configScopes, oidc.ScopeOpenID)
 	}
-
+	for _, scope := range configScopes{
+		if scope != "" {
+			finalScopes = append(finalScopes, scope)
+		}
+	}
 	return oauth2.Config{
 		ClientID:     config.ClientID,
 		ClientSecret: config.ClientSecret,
 		Endpoint:     endpoint,
 		RedirectURL:  config.RancherURL,
-		Scopes:       configScopes,
+		Scopes:       finalScopes,
 	}
 }
 
